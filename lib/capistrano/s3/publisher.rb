@@ -97,7 +97,7 @@ module Capistrano::S3::Publisher
       type = MIME::Types.type_for(File.basename(file))
       if type && !type.empty?
         if type.first.sub_type == "gzip"
-          return { :content_encoding => "gzip" }
+          return { :content_encoding => "gzip" } if File.exist? file.gsub /\.gz$/, ""
         end
       end
       {}
