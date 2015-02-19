@@ -75,6 +75,7 @@ module Capistrano::S3::Publisher
       options.merge!(self.build_content_type_hash(file))
       options.merge!(self.build_redirect_hash(path, extra_options[:redirect]))
       options.merge!(self.set_content_encoding_for_gzip(file))
+      options.merge!(self.set_vary_accept_encoding(file))
       options.merge!(extra_options[:write]) if extra_options[:write]
 
       s3.put_object(options)
@@ -99,6 +100,13 @@ module Capistrano::S3::Publisher
         if type.first.sub_type == "gzip"
           return { :content_encoding => "gzip" } if File.exist? file.gsub /\.gz$/, ""
         end
+      end
+      {}
+    end
+
+    def self.set_vary_accept_encoding(file)
+      if (File.exist? "#{file}.gz") || (file.match(/\.gz$/) && File.exist?(file.match(/(.*)\.gz$/)[1]))
+        return { :metadata => { "Vary" => "Accept-Encoding" } }
       end
       {}
     end
